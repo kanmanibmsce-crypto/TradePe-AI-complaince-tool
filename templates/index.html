@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TradePe &mdash; AI Compliance Copilot</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="logotype">TradePe</span>
+        <span class="env-badge">Demo Environment</span>
+      </div>
+
+      <nav class="main-nav" role="navigation" aria-label="Primary navigation">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="dashboard">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="new-screening">New Screening</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="review-queue">
+              Review Queue
+            </a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="cases">Cases</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="regulatory-updates">Regulatory Updates</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="agents">Agents</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" data-view="audit-trail">Audit Trail</a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="header-actions">
+        <button class="btn-help" type="button" aria-label="Help">
+          <span class="help-icon" aria-hidden="true">?</span>
+          Help
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== Main Content ===== -->
+  <main id="app" class="app-workspace" role="main" aria-live="polite">
+    <!-- Views are rendered here by app.js -->
+  </main>
+
+  <!-- ===== Injected Config ===== -->
+  <script>
+  window.TRADEPE_CONFIG = {
+    watchlist_count: {{ watchlist_count }},
+    score_review: {{ score_review }},
+    score_high: {{ score_high }}
+  };
+  </script>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+[
+  {"txn_id": "TXN-4471", "beneficiary": "Surya Handlooms Pvt Ltd", "entity_type": "entity", "country": "IN", "amount": 15000, "currency": "USD", "description": "Clear case — no watchlist matches"},
+  {"txn_id": "TXN-4490", "beneficiary": "Orion Metals FZE", "entity_type": "entity", "country": "AE", "amount": 85000, "currency": "USD", "description": "EU/OFAC match — Oryon Metals FZE"},
+  {"txn_id": "TXN-4512", "beneficiary": "Mohammed Farhan General Trading Co", "entity_type": "entity", "country": "PK", "amount": 42000, "currency": "USD", "description": "UN match via transliteration — Muhammad Farhan Trading Company"}
+]

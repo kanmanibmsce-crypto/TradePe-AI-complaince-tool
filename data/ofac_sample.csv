@@ -1,0 +1,9 @@
+uid,name,type,program,country,aliases,remarks
+OFAC-001,Oryon Metals FZE,entity,OFAC-SAMPLE,AE,Oryon Metal FZE|Orion Metals FZE,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-002,Al-Rashid Trading Company,entity,OFAC-SAMPLE,SY,Al Rasheed Trading Co,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-003,Nour Energy Holdings Ltd,entity,OFAC-SAMPLE,IR,Noor Energy Holdings,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-004,Viktor Petrov,individual,OFAC-SAMPLE,RU,Victor Petrov|V. Petrov,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-005,Khalid Al-Mansouri,individual,OFAC-SAMPLE,YE,Khaled Al Mansoori|K. Mansouri,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-006,Dragon Pearl Shipping Co,entity,OFAC-SAMPLE,CN,Dragon Pearl Ship|DP Shipping,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-007,Meridian Capital Investments,entity,OFAC-SAMPLE,SY,Meridian Capital|Meridien Capital,SYNTHETIC DEMO DATA - NOT REAL
+OFAC-008,Ibrahim Hassan General Trading,entity,OFAC-SAMPLE,SD,Ibrahim Hassan Trading|I.H. General Trade,SYNTHETIC DEMO DATA - NOT REAL
