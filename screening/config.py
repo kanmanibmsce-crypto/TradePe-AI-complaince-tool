@@ -11,7 +11,7 @@ LIST_FILES = [
     os.path.join(os.path.dirname(__file__), '..', 'data', 'pep_sample.csv'),
 ]
 
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'screendesk.db')
+DB_PATH = '/tmp/screendesk.db' if os.environ.get('VERCEL') else os.path.join(os.path.dirname(__file__), '..', 'screendesk.db')
 
 CLAUDE_MODEL = 'claude-haiku-4-5-20251001'
 DEMO_ANALYST = 'demo.analyst@tradepe.example'

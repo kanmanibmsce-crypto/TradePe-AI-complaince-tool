@@ -20,6 +20,8 @@ from screening.config import DEMO_ANALYST, SCORE_REVIEW, SCORE_HIGH
 app = Flask(__name__)
 _watchlist = None
 
+init_db()
+
 
 def get_watchlist():
     global _watchlist
