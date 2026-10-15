@@ -21,6 +21,10 @@ app = Flask(__name__)
 _watchlist = None
 
 init_db()
+from screening.store import get_cases as _get_cases
+if not _get_cases(limit=1):
+    from seed_demo import seed as _seed
+    _seed()
 
 
 def get_watchlist():
