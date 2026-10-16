@@ -2,13 +2,17 @@ import sys
 import json
 import time
 import uuid
-from flask import Flask, render_template, request, jsonify
+import os
+import functools
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from werkzeug.security import check_password_hash
 
 from screening.store import (
     init_db, save_screening, get_queue, get_hit,
     set_hit_disposition, get_audit, get_stats,
     save_case, get_cases, get_case, record_case_decision,
     save_trade_document_record, audit_log,
+    get_user_by_username, get_user_by_id,
 )
 from screening.matcher import Watchlist
 from screening.ai_rationale import draft as draft_rationale
@@ -18,6 +22,18 @@ from regulatory_intelligence.data import get_all_updates, get_updates_for_countr
 from screening.config import DEMO_ANALYST, SCORE_REVIEW, SCORE_HIGH
 
 app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY', 'tradepe-demo-secret-key-change-in-prod')
+
+
+def login_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('user_id'):
+            if request.is_json or request.path.startswith('/api/'):
+                return jsonify({'error': 'Authentication required'}), 401
+            return redirect(url_for('login_page'))
+        return f(*args, **kwargs)
+    return decorated
 _watchlist = None
 
 init_db()
@@ -54,16 +70,47 @@ def _is_override(action_taken, recommendation):
     return False
 
 
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if session.get('user_id'):
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        username = (request.form.get('username') or '').strip()
+        password = request.form.get('password') or ''
+        user = get_user_by_username(username)
+        if user and check_password_hash(user['password_hash'], password):
+            session['user_id'] = user['id']
+            session['username'] = user['username']
+            session['role'] = user['role']
+            audit_log(username, 'auth.login', f'User {username} logged in')
+            return redirect(url_for('index'))
+        error = 'Invalid username or password.'
+    return render_template('login.html', error=error)
+
+
+@app.route('/logout')
+def logout():
+    username = session.get('username', 'unknown')
+    session.clear()
+    audit_log(username, 'auth.logout', f'User {username} logged out')
+    return redirect(url_for('login_page'))
+
+
 @app.route('/')
+@login_required
 def index():
     wl = get_watchlist()
     return render_template('index.html', watchlist_count=wl.count,
-                           score_review=SCORE_REVIEW, score_high=SCORE_HIGH)
+                           score_review=SCORE_REVIEW, score_high=SCORE_HIGH,
+                           current_user=session.get('username'),
+                           current_role=session.get('role'))
 
 
 # ── Screening ──────────────────────────────────────────────────────────────
 
 @app.route('/api/screen', methods=['POST'])
+@login_required
 def api_screen():
     data = request.get_json(force=True)
     name = (data.get('name') or '').strip()
@@ -96,6 +143,7 @@ def api_screen():
 
 
 @app.route('/api/demo-batch', methods=['POST'])
+@login_required
 def api_demo_batch():
     import os
     data_path = os.path.join(os.path.dirname(__file__), 'data', 'sample_payments.json')
@@ -119,11 +167,13 @@ def api_demo_batch():
 
 
 @app.route('/api/queue', methods=['GET'])
+@login_required
 def api_queue():
     return jsonify({'hits': get_queue()})
 
 
 @app.route('/api/hits/<int:hit_id>/rationale', methods=['POST'])
+@login_required
 def api_draft_rationale(hit_id):
     hit = get_hit(hit_id)
     if not hit:
@@ -134,6 +184,7 @@ def api_draft_rationale(hit_id):
 
 
 @app.route('/api/hits/<int:hit_id>/disposition', methods=['POST'])
+@login_required
 def api_disposition(hit_id):
     data = request.get_json(force=True)
     disposition = data.get('disposition', '').strip()
@@ -152,11 +203,13 @@ def api_disposition(hit_id):
 # ── Cases ──────────────────────────────────────────────────────────────────
 
 @app.route('/api/cases', methods=['GET'])
+@login_required
 def api_list_cases():
     return jsonify({'cases': get_cases()})
 
 
 @app.route('/api/cases', methods=['POST'])
+@login_required
 def api_create_case():
     data = request.get_json(force=True)
     required = ['counterparty_name', 'customer_legal_name', 'customer_country']
@@ -180,6 +233,7 @@ def api_create_case():
 
 
 @app.route('/api/cases/<int:case_id>', methods=['GET'])
+@login_required
 def api_get_case(case_id):
     case = get_case(case_id)
     if not case:
@@ -193,6 +247,7 @@ def api_get_case(case_id):
 
 
 @app.route('/api/cases/<int:case_id>/decision', methods=['POST'])
+@login_required
 def api_case_decision(case_id):
     case = get_case(case_id)
     if not case:
@@ -212,6 +267,7 @@ def api_case_decision(case_id):
 # ── Dashboard / Stats ──────────────────────────────────────────────────────
 
 @app.route('/api/dashboard', methods=['GET'])
+@login_required
 def api_dashboard():
     cases = get_cases(limit=100)
     total = len(cases)
@@ -240,6 +296,7 @@ def api_dashboard():
 # ── Audit ──────────────────────────────────────────────────────────────────
 
 @app.route('/api/audit', methods=['GET'])
+@login_required
 def api_audit():
     return jsonify({'events': get_audit()})
 
@@ -247,11 +304,13 @@ def api_audit():
 # ── Regulatory Updates ─────────────────────────────────────────────────────
 
 @app.route('/api/regulatory-updates', methods=['GET'])
+@login_required
 def api_regulatory_updates():
     return jsonify({'updates': get_all_updates()})
 
 
 @app.route('/api/regulatory-updates/case/<int:case_id>', methods=['GET'])
+@login_required
 def api_regulatory_updates_case(case_id):
     case = get_case(case_id)
     if not case:
@@ -263,6 +322,7 @@ def api_regulatory_updates_case(case_id):
 # ── Stats ──────────────────────────────────────────────────────────────────
 
 @app.route('/api/stats', methods=['GET'])
+@login_required
 def api_stats():
     return jsonify(get_stats())
 

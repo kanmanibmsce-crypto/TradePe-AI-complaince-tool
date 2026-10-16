@@ -19,6 +19,7 @@ def init_db(reset=False):
         conn.execute('DROP TABLE IF EXISTS case_decisions')
         conn.execute('DROP TABLE IF EXISTS trade_documents')
         conn.execute('DROP TABLE IF EXISTS transactions')
+        conn.execute('DROP TABLE IF EXISTS users')
     conn.execute('''CREATE TABLE IF NOT EXISTS screenings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT, entity_type TEXT, country TEXT,
@@ -71,8 +72,47 @@ def init_db(reset=False):
         case_id INTEGER, amount REAL, corridor TEXT,
         unusual_corridor_flag INTEGER, typical_amount REAL,
         created_at REAL)''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        email TEXT UNIQUE,
+        password_hash TEXT NOT NULL,
+        role TEXT DEFAULT 'analyst',
+        created_at REAL)''')
     conn.commit()
     conn.close()
+    _seed_default_users()
+
+
+def _seed_default_users():
+    from werkzeug.security import generate_password_hash
+    defaults = [
+        ('admin',   'admin@tradepe.example',   generate_password_hash('Admin123!'),   'admin'),
+        ('analyst', 'analyst@tradepe.example', generate_password_hash('Analyst123!'), 'analyst'),
+    ]
+    conn = _conn()
+    for username, email, pw_hash, role in defaults:
+        conn.execute(
+            'INSERT OR IGNORE INTO users (username, email, password_hash, role, created_at) VALUES (?,?,?,?,?)',
+            (username, email, pw_hash, role, time.time()))
+    conn.commit()
+    conn.close()
+
+
+def get_user_by_username(username):
+    conn = _conn()
+    conn.row_factory = sqlite3.Row
+    row = conn.execute('SELECT * FROM users WHERE username=?', (username,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
+
+
+def get_user_by_id(user_id):
+    conn = _conn()
+    conn.row_factory = sqlite3.Row
+    row = conn.execute('SELECT * FROM users WHERE id=?', (user_id,)).fetchone()
+    conn.close()
+    return dict(row) if row else None
 
 
 def audit_log(actor, action, detail):

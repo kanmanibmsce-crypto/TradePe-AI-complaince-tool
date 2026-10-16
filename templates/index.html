@@ -49,6 +49,11 @@
           <span class="help-icon" aria-hidden="true">?</span>
           Help
         </button>
+        <span class="header-user" title="Signed in as {{ current_user }}">
+          {{ current_user }}
+          {% if current_role == 'admin' %}<span class="env-badge" style="margin-left:4px">Admin</span>{% endif %}
+        </span>
+        <a href="/logout" class="btn-logout" id="btn-logout">Sign out</a>
       </div>
     </div>
   </header>
